@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import Mock
 
-import giphypy
+import giphypop
 
 
 class GiphyTestCase(TestCase):
