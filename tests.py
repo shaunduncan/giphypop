@@ -61,7 +61,7 @@ class GiphyResultCase(TestCase):
         assert isinstance(norm['height'], int)
         assert isinstance(norm['frames'], int)
         assert isinstance(norm['size'], int)
-        assert isinstance(norm['something'], basestring)
+        assert isinstance(norm['something'], str)
 
     def test_make_images_creates_attribute(self):
         # Expect that make_images will create an attribute with key name

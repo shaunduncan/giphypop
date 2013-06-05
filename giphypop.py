@@ -204,7 +204,7 @@ class Giphy(object):
     def __init__(self, api_key=GIPHY_PUBLIC_KEY):
         # Warn if using public key
         if api_key == GIPHY_PUBLIC_KEY:
-            warnings.warn(u'You are using the giphy public api key. This should be used for testing only')
+            warnings.warn('You are using the giphy public api key. This should be used for testing only')
 
         self.api_key = api_key
 
@@ -244,10 +244,10 @@ class Giphy(object):
         :param offset: Results offset (0-indexed)
         :type offset: int
         """
-        assert any((term, phrase)), u'You must supply a term or phrase to search'
+        assert any((term, phrase)), 'You must supply a term or phrase to search'
 
         if limit is not None:
-            assert limit <= 25, u'Search limits must be <= 25'
+            assert limit <= 25, 'Search limits must be <= 25'
 
         # Phrases should have dashes and not spaces
         if phrase:
@@ -271,7 +271,7 @@ class Giphy(object):
         :param phrase: Search phrase
         :type phrase: string
         """
-        assert any((term, phrase)), u'You must supply a term or phrase to search'
+        assert any((term, phrase)), 'You must supply a term or phrase to search'
 
         # Phrases should have dashes and not spaces
         if phrase:
