@@ -89,6 +89,14 @@ class GiphyResult(AttrDict):
             # Shorthand
             self._make_images(data.get('images', {}))
 
+    def open(self):
+        """
+        Opens the giphy url in a web browser
+        """
+        # Imported here because this method is MAGIC
+        import webbrowser
+        webbrowser.open(self.url)
+
     @property
     def media_url(self):
         """
@@ -207,6 +215,20 @@ class Giphy(object):
         if meta.get('status') != 200:
             raise GiphyApiException(meta.get('error_message'))
 
+    def _fetch(self, endpoint_name, **params):
+        """
+        Wrapper for making an api request from giphy
+        """
+        params['api_key'] = self.api_key
+
+        resp = requests.get(self._endpoint(endpoint_name), params=params)
+        resp.raise_for_status()
+
+        data = resp.json()
+        self._check_or_raise(data.get('meta'))
+
+        return data
+
     def search(self, term=None, phrase=None, limit=None, offset=0):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
@@ -231,18 +253,7 @@ class Giphy(object):
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        params = {
-            'q': term or phrase,
-            'api_key': self.api_key,
-            'offset': offset,
-            'limit': limit,
-        }
-
-        resp = requests.get(self._endpoint('search'), params=params)
-        resp.raise_for_status()
-
-        data = resp.json()
-        self._check_or_raise(data.get('meta'))
+        data = self._fetch('search', q=(term or phrase), offset=offset, limit=limit)
 
         # TODO: Make this a generator
         # TODO: Handle pagination after generator
@@ -266,17 +277,7 @@ class Giphy(object):
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        params = {
-            's': term or phrase,
-            'api_key': self.api_key,
-        }
-
-        resp = requests.get(self._endpoint('translate'), params=params)
-        resp.raise_for_status()
-
-        data = resp.json()
-        self._check_or_raise(data.get('meta'))
-
+        data = self._fetch('translate', s=(term or phrase))
         return GiphyResult(data['data'])
 
     def gif(self, gif_id):
@@ -286,17 +287,7 @@ class Giphy(object):
         :param gif_id: Unique giphy gif ID
         :type gif_id: string
         """
-        params = {
-            'api_key': self.api_key,
-        }
-
-        resp = requests.get(self._endpoint(gif_id), params=params)
-        resp.raise_for_status()
-
-        data = resp.json()
-        self._check_or_raise(data.get('meta'))
-
-        return GiphyResult(data['data'])
+        return GiphyResult(self._fetch(gif_id)['data'])
 
     def screensaver(self, tag=None):
         """
@@ -307,17 +298,5 @@ class Giphy(object):
         :param tag: Tag to retrieve a screensaver image
         :type tag: string
         """
-        params = {
-            'api_key': self.api_key,
-        }
-
-        if tag:
-            params['tag'] = tag
-
-        resp = requests.get(self._endpoint('screensaver'), params=params)
-        resp.raise_for_status()
-
-        data = resp.json()
-        self._check_or_raise(data.get('meta'))
-
-        return self.gif(data['data']['id'])
+        params = {'tag': tag} if tag else {}
+        return self.gif(self._fetch('screensaver', **params)['data']['id'])
