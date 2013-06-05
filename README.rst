@@ -1,6 +1,6 @@
-=======
-giphypy
-=======
+========
+giphypop
+========
 
 A python wrapper around the giphy_ api.
 

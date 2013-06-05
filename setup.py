@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 version = '0.1'
 
-setup(name='giphypy',
+setup(name='giphypop',
       version=version,
       description=("Python wrapper for Giphy API"),
       long_description=open('README.rst').read(),
@@ -15,8 +15,8 @@ setup(name='giphypy',
       keywords='python giphy api',
       author='Shaun Duncan',
       author_email='shaun.duncan@gmail.com',
-      url='http://www.github.com/shaunduncan/giphypy/',
+      url='http://www.github.com/shaunduncan/giphypop/',
       license='MIT',
       packages=find_packages(),
-      py_modules=['giphypy'],
+      py_modules=['giphypop'],
       )
