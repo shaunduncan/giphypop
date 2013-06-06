@@ -215,7 +215,8 @@ class Giphy(object):
     def __init__(self, api_key=GIPHY_PUBLIC_KEY):
         # Warn if using public key
         if api_key == GIPHY_PUBLIC_KEY:
-            warnings.warn('You are using the giphy public api key. This should be used for testing only')
+            warnings.warn('You are using the giphy public api key. This should be used for testing only '
+                          'and may be deactivated in the future. See https://github.com/Giphy/GiphyAPI.')
 
         self.api_key = api_key
 
@@ -272,17 +273,31 @@ class Giphy(object):
             data = fetch(offset=page, limit=per_page)
             page += 1
 
-            for data in data['data']:
+            # Guard for empty results
+            if not data['data']:
+                raise StopIteration
+
+            for item in data['data']:
                 results_yielded += 1
-                yield GiphyImage(data)
+                yield GiphyImage(item)
 
                 if limit is not None and results_yielded >= limit:
                     raise StopIteration
 
             # total_count is actually total_pages. also check the limit
-            if ((page + 1) >= data['pagination']['total_count'] or
+            if (page >= data['pagination']['total_count'] or
                     (limit is not None and results_yielded >= limit)):
                 raise StopIteration
+
+    def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT):
+        """
+        Suppose you expect the `search` method to just give you a list rather
+        than a generator. This method will have that effect. Equivalent to::
+
+            >>> g = Giphy()
+            >>> results = [x for x in g.search('foo')]
+        """
+        return [x for x in self.search(term=term, phrase=phrase, limit=limit)]
 
     def translate(self, term=None, phrase=None):
         """
@@ -332,7 +347,7 @@ class Giphy(object):
         return self.screensaver()
 
 
-def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=None):
+def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
@@ -340,7 +355,7 @@ def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=None):
     return Giphy(api_key).search(term=term, phrase=phrase, limit=limit)
 
 
-def translate(term=None, phrase=None, api_key=None):
+def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the translate method.
@@ -348,7 +363,7 @@ def translate(term=None, phrase=None, api_key=None):
     return Giphy(api_key).translate(term=term, phrase=phrase)
 
 
-def gif(gif_id, api_key=None):
+def gif(gif_id, api_key=GIPHY_PUBLIC_KEY):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the gif method.
@@ -356,7 +371,7 @@ def gif(gif_id, api_key=None):
     return Giphy(api_key).gif(gif_id)
 
 
-def screensaver(tag=None, api_key=None):
+def screensaver(tag=None, api_key=GIPHY_PUBLIC_KEY):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the screensaver method.
@@ -364,7 +379,7 @@ def screensaver(tag=None, api_key=None):
     return Giphy(api_key).screensaver(tag)
 
 
-def random_gif(api_key=None):
+def random_gif(api_key=GIPHY_PUBLIC_KEY):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the random_gif method.

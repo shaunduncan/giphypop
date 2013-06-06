@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mock import patch
+from mock import Mock, patch
 
 from giphypop import AttrDict, Giphy, GiphyApiException, GiphyImage
 
@@ -138,6 +138,88 @@ class GiphyTestCase(TestCase):
         requests.json.return_value = err
 
         self.assertRaises(GiphyApiException, self.g._fetch, 'foo')
+
+    def fake_search_fetch(self, num_results, pages=3):
+        self.g._fetch = Mock()
+        self.g._fetch.return_value = {
+            'data': [FAKE_DATA for x in range(num_results)],
+            'pagination': {
+                'total_count': pages,
+                'count': 25,
+                'offset': 0
+            },
+            'meta': {'status': 200}
+        }
+
+    def fake_fetch(self):
+        self.g._fetch = Mock()
+        self.g._fetch.return_value = {
+            'data': FAKE_DATA,
+            'meta': {'status': 200}
+        }
+
+    def test_search_no_results(self):
+        self.fake_search_fetch(0, pages=1)
+        results = [x for x in self.g.search('foo')]
+        assert len(results) == 0
+
+    def test_search_respects_hard_limit(self):
+        self.fake_search_fetch(25)
+        results = [x for x in self.g.search('foo', limit=10)]
+        assert len(results) == 10
+
+    def test_search_handles_pages(self):
+        self.fake_search_fetch(25)
+        results = [x for x in self.g.search('foo', limit=50)]
+        assert len(results) == 50
+
+    def test_search_no_limit_returns_all(self):
+        self.fake_search_fetch(25)
+        results = [x for x in self.g.search('foo', limit=None)]
+        assert len(results) == 75
+
+    def test_search_list_returns_list(self):
+        self.fake_search_fetch(25)
+        results = self.g.search_list('foo', limit=10)
+        assert isinstance(results, list)
+        assert len(results) == 10
+
+    def test_search_with_phrase_hyphenates(self):
+        self.fake_search_fetch(0, pages=1)
+        self.g.search(phrase='foo bar baz')
+        assert self.g._fetch.called_with(q='foo-bar-baz')
+
+    def test_translate_with_phrase_hyphenates(self):
+        self.fake_fetch()
+        self.g.translate(phrase='foo bar baz')
+        assert self.g._fetch.called_with(s='foo-bar-baz')
+
+    def test_translate(self):
+        self.fake_fetch()
+        img = self.g.translate('foo')
+        assert isinstance(img, GiphyImage)
+        assert self.g._fetch.called_with('translate')
+
+    def test_gif(self):
+        self.fake_fetch()
+        img = self.g.gif('foo')
+        assert isinstance(img, GiphyImage)
+        assert self.g._fetch.called_with('foo')
+
+    def test_screensaver(self):
+        self.fake_fetch()
+        img = self.g.screensaver()
+        assert isinstance(img, GiphyImage)
+
+    def test_screensaver_passes_tag(self):
+        self.fake_fetch()
+        self.g.screensaver('foo')
+        assert self.g._fetch.called_with(tag='foo')
+
+    def test_random_gif(self):
+        self.fake_fetch()
+        img = self.g.random_gif()
+        assert isinstance(img, GiphyImage)
 
 
 # TEST DATA
