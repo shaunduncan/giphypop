@@ -18,6 +18,13 @@ are using pip, you can install ``giphypop``:
 
     $ pip install requests giphypop
 
+Alternatively:
+
+.. code-block:: bash
+
+    $ pip install requests
+    $ pip install -e git+https://github.com/shaunduncan/giphypop.git#egg=giphypop
+
 Then you should be off and running. ``giphypop`` has been tested against python
 versions 2.6, 2.7, 3.2 and 3.3.
 
