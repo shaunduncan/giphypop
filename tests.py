@@ -5,6 +5,56 @@ from mock import Mock, patch
 from giphypop import AttrDict, Giphy, GiphyApiException, GiphyImage
 
 
+# TEST DATA
+FAKE_DATA = {
+    "bitly_fullscreen_url": "http://gph.is/XH7Sri",
+    "bitly_gif_url": "http://gph.is/XH7V6j",
+    "bitly_tiled_url": "http://gph.is/XH7Srk",
+    "id": "3avUsGhmckIYE",
+    "images": {
+        "fixed_height": {
+            "height": "200",
+            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200.gif",
+            "width": "289"
+        },
+        "fixed_height_downsampled": {
+            "height": "200",
+            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200_d.gif",
+            "width": "289"
+        },
+        "fixed_height_still": {
+            "height": "200",
+            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200_s.gif",
+            "width": "289"
+        },
+        "fixed_width": {
+            "height": "138",
+            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200w.gif",
+            "width": "200"
+        },
+        "fixed_width_downsampled": {
+            "height": "138",
+            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200w_d.gif",
+            "width": "200"
+        },
+        "fixed_width_still": {
+            "height": "138",
+            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200w_s.gif",
+            "width": "200"
+        },
+        "original": {
+            "height": "346",
+            "url": "http://media.giphy.com/media/3avUsGhmckIYE/giphy.gif",
+            "width": "500",
+            "frames": "100",
+            "size": "123",
+        }
+    },
+    "type": "gif",
+    "url": "http://giphy.com/gifs/3avUsGhmckIYE"
+}
+
+
 class AttrDictTestCase(TestCase):
 
     def test_get_attribute_raises(self):
@@ -151,10 +201,10 @@ class GiphyTestCase(TestCase):
             'meta': {'status': 200}
         }
 
-    def fake_fetch(self):
+    def fake_fetch(self, result=FAKE_DATA):
         self.g._fetch = Mock()
         self.g._fetch.return_value = {
-            'data': FAKE_DATA,
+            'data': result or None,
             'meta': {'status': 200}
         }
 
@@ -196,20 +246,17 @@ class GiphyTestCase(TestCase):
 
     def test_translate(self):
         self.fake_fetch()
-        img = self.g.translate('foo')
-        assert isinstance(img, GiphyImage)
+        assert isinstance(self.g.translate('foo'), GiphyImage)
         assert self.g._fetch.called_with('translate')
 
     def test_gif(self):
         self.fake_fetch()
-        img = self.g.gif('foo')
-        assert isinstance(img, GiphyImage)
+        assert isinstance(self.g.gif('foo'), GiphyImage)
         assert self.g._fetch.called_with('foo')
 
     def test_screensaver(self):
         self.fake_fetch()
-        img = self.g.screensaver()
-        assert isinstance(img, GiphyImage)
+        assert isinstance(self.g.screensaver(), GiphyImage)
 
     def test_screensaver_passes_tag(self):
         self.fake_fetch()
@@ -218,55 +265,16 @@ class GiphyTestCase(TestCase):
 
     def test_random_gif(self):
         self.fake_fetch()
-        img = self.g.random_gif()
-        assert isinstance(img, GiphyImage)
+        assert isinstance(self.g.random_gif(), GiphyImage)
 
+    def test_translate_returns_none(self):
+        self.fake_fetch(result=None)
+        assert self.g.translate('foo') is None
 
-# TEST DATA
-FAKE_DATA = {
-    "bitly_fullscreen_url": "http://gph.is/XH7Sri",
-    "bitly_gif_url": "http://gph.is/XH7V6j",
-    "bitly_tiled_url": "http://gph.is/XH7Srk",
-    "id": "3avUsGhmckIYE",
-    "images": {
-        "fixed_height": {
-            "height": "200",
-            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200.gif",
-            "width": "289"
-        },
-        "fixed_height_downsampled": {
-            "height": "200",
-            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200_d.gif",
-            "width": "289"
-        },
-        "fixed_height_still": {
-            "height": "200",
-            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200_s.gif",
-            "width": "289"
-        },
-        "fixed_width": {
-            "height": "138",
-            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200w.gif",
-            "width": "200"
-        },
-        "fixed_width_downsampled": {
-            "height": "138",
-            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200w_d.gif",
-            "width": "200"
-        },
-        "fixed_width_still": {
-            "height": "138",
-            "url": "http://media.giphy.com/media/3avUsGhmckIYE/200w_s.gif",
-            "width": "200"
-        },
-        "original": {
-            "height": "346",
-            "url": "http://media.giphy.com/media/3avUsGhmckIYE/giphy.gif",
-            "width": "500",
-            "frames": "100",
-            "size": "123",
-        }
-    },
-    "type": "gif",
-    "url": "http://giphy.com/gifs/3avUsGhmckIYE"
-}
+    def test_gif_returns_none(self):
+        self.fake_fetch(result=None)
+        assert self.g.gif('foo') is None
+
+    def test_screensaver_returns_none(self):
+        self.fake_fetch(result=None)
+        assert self.g.screensaver('foo') is None

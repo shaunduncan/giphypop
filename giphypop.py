@@ -317,7 +317,11 @@ class Giphy(object):
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        return GiphyImage(self._fetch('translate', s=(term or phrase))['data'])
+        resp = self._fetch('translate', s=(term or phrase))
+        if resp['data']:
+            return GiphyImage(resp['data'])
+        else:
+            return None
 
     def gif(self, gif_id):
         """
@@ -326,7 +330,12 @@ class Giphy(object):
         :param gif_id: Unique giphy gif ID
         :type gif_id: string
         """
-        return GiphyImage(self._fetch(gif_id)['data'])
+        resp = self._fetch(gif_id)
+
+        if resp['data']:
+            return GiphyImage(resp['data'])
+        else:
+            return None
 
     def screensaver(self, tag=None):
         """
@@ -338,7 +347,12 @@ class Giphy(object):
         :type tag: string
         """
         params = {'tag': tag} if tag else {}
-        return self.gif(self._fetch('screensaver', **params)['data']['id'])
+        resp = self._fetch('screensaver', **params)
+
+        if resp['data'] and resp['data']['id']:
+            return self.gif(resp['data']['id'])
+        else:
+            return None
 
     def random_gif(self):
         """
@@ -351,6 +365,14 @@ def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUB
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
+    """
+    return Giphy(api_key).search(term=term, phrase=phrase, limit=limit)
+
+
+def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the search_list method.
     """
     return Giphy(api_key).search(term=term, phrase=phrase, limit=limit)
 
