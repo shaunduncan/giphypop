@@ -393,7 +393,7 @@ def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPH
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search_list method.
     """
-    return Giphy(api_key=api_key, strict=strict).search(term=term, phrase=phrase, limit=limit)
+    return Giphy(api_key=api_key, strict=strict).search_list(term=term, phrase=phrase, limit=limit)
 
 
 def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
@@ -417,7 +417,7 @@ def screensaver(tag=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the screensaver method.
     """
-    return Giphy(api_key=api_key, strict=strict).screensaver(tag)
+    return Giphy(api_key=api_key, strict=strict).screensaver(tag=tag)
 
 
 # Alias

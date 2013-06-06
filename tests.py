@@ -2,7 +2,15 @@ from unittest import TestCase
 
 from mock import Mock, patch
 
-from giphypop import AttrDict, Giphy, GiphyApiException, GiphyImage
+from giphypop import (AttrDict,
+                      Giphy,
+                      GiphyApiException,
+                      GiphyImage,
+                      search,
+                      search_list,
+                      translate,
+                      gif,
+                      screensaver)
 
 
 # TEST DATA
@@ -189,6 +197,14 @@ class GiphyTestCase(TestCase):
 
         self.assertRaises(GiphyApiException, self.g._fetch, 'foo')
 
+    @patch('giphypop.requests')
+    def test_fetch(self, requests):
+        data = {'data': FAKE_DATA, 'meta': {'status': 200}}
+        requests.get.return_value = requests
+        requests.json.return_value = data
+
+        assert self.g._fetch('foo') == data
+
     def fake_search_fetch(self, num_results, pages=3):
         self.g._fetch = Mock()
         self.g._fetch.return_value = {
@@ -298,3 +314,46 @@ class GiphyTestCase(TestCase):
         self.assertRaises(GiphyApiException, self.g.translate, 'foo', strict=False)
         self.assertRaises(GiphyApiException, self.g.gif, 'foo', strict=False)
         self.assertRaises(GiphyApiException, self.g.screensaver, 'foo', strict=False)
+
+
+class AliasTestCase(TestCase):
+
+    @patch('giphypop.Giphy')
+    def test_search_alias(self, giphy):
+        giphy.return_value = giphy
+        search(term='foo', limit=10, api_key='bar', strict=False)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.search.assert_called_with(term='foo', phrase=None, limit=10)
+
+    @patch('giphypop.Giphy')
+    def test_search_list_alias(self, giphy):
+        giphy.return_value = giphy
+        search_list(term='foo', limit=10, api_key='bar', strict=False)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.search_list.assert_called_with(term='foo', phrase=None, limit=10)
+
+    @patch('giphypop.Giphy')
+    def test_translate_alias(self, giphy):
+        giphy.return_value = giphy
+        translate(term='foo', api_key='bar', strict=False)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.translate.assert_called_with(term='foo', phrase=None)
+
+    @patch('giphypop.Giphy')
+    def test_gif_alias(self, giphy):
+        giphy.return_value = giphy
+        gif('foo', api_key='bar', strict=False)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.gif.assert_called_with('foo')
+
+    @patch('giphypop.Giphy')
+    def test_screensaver_alias(self, giphy):
+        giphy.return_value = giphy
+        screensaver(tag='foo', api_key='bar', strict=False)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.screensaver.assert_called_with(tag='foo')
