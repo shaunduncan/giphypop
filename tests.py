@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from mock import patch
 
-from giphypop import AttrDict, Giphy, GiphyApiException, GiphyResult
+from giphypop import AttrDict, Giphy, GiphyApiException, GiphyImage
 
 
 class AttrDictTestCase(TestCase):
@@ -45,10 +45,10 @@ class AttrDictTestCase(TestCase):
         assert foo.foo == 'bar'
 
 
-class GiphyResultCase(TestCase):
+class GiphyImageCase(TestCase):
 
     def test_normalize(self):
-        result = GiphyResult()
+        result = GiphyImage()
         norm = result._normalized({
             'width': '200',
             'height': 300,
@@ -65,7 +65,7 @@ class GiphyResultCase(TestCase):
 
     def test_make_images_creates_attribute(self):
         # Expect that make_images will create an attribute with key name
-        result = GiphyResult()
+        result = GiphyImage()
         img = {'original': FAKE_DATA['images']['original']}
 
         assert not hasattr(result, 'original')
@@ -74,7 +74,7 @@ class GiphyResultCase(TestCase):
 
     def test_make_images_doesnt_subattr(self):
         # If there is a single underscore, don't subattr
-        result = GiphyResult()
+        result = GiphyImage()
         img = {'fixed_width': FAKE_DATA['images']['fixed_width']}
 
         assert not hasattr(result, 'fixed')
@@ -84,7 +84,7 @@ class GiphyResultCase(TestCase):
         assert hasattr(result, 'fixed_width')
 
     def test_make_images_creates_subattr(self):
-        result = GiphyResult()
+        result = GiphyImage()
         img = {'fixed_width': FAKE_DATA['images']['fixed_width'],
                'fixed_width_still': FAKE_DATA['images']['fixed_width_still']}
 
@@ -94,7 +94,7 @@ class GiphyResultCase(TestCase):
         assert hasattr(result.fixed_width, 'still')
 
     def test_original_properties(self):
-        result = GiphyResult()
+        result = GiphyImage()
         img = {'original': FAKE_DATA['images']['original']}
         props = {
             'media_url': 'url',

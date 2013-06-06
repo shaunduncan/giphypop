@@ -44,7 +44,7 @@ class AttrDict(dict):
             self[attr] = value
 
 
-class GiphyResult(AttrDict):
+class GiphyImage(AttrDict):
     """
     A special case AttrDict that handles data specifically being returned
     from the giphy api (i.e. integer values converted from strings). The structure
@@ -91,10 +91,10 @@ class GiphyResult(AttrDict):
     """
     def __init__(self, data=None):
         if data:
-            super(GiphyResult, self).__init__(id=data.get('id'),
-                                              url=data.get('url'),
-                                              type=data.get('type'),
-                                              raw_data=data)
+            super(GiphyImage, self).__init__(id=data.get('id'),
+                                             url=data.get('url'),
+                                             type=data.get('type'),
+                                             raw_data=data)
 
             # bit.ly urls
             self.fullscreen = data.get('bitly_fullscreen_url')
@@ -245,7 +245,7 @@ class Giphy(object):
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
         by phrase, use the `phrase` keyword argument. Note that this method
-        is a GiphyResult generator that automatically handles api paging and
+        is a GiphyImage generator that automatically handles api paging and
         limits. Optionally accepts a limit that will terminate the generation
         after a specified number of results have been yielded. This defaults
         to 25 results; a None implies no limit
@@ -274,7 +274,7 @@ class Giphy(object):
 
             for data in data['data']:
                 results_yielded += 1
-                yield GiphyResult(data)
+                yield GiphyImage(data)
 
                 if limit is not None and results_yielded >= limit:
                     raise StopIteration
@@ -302,7 +302,7 @@ class Giphy(object):
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        return GiphyResult(self._fetch('translate', s=(term or phrase))['data'])
+        return GiphyImage(self._fetch('translate', s=(term or phrase))['data'])
 
     def gif(self, gif_id):
         """
@@ -311,7 +311,7 @@ class Giphy(object):
         :param gif_id: Unique giphy gif ID
         :type gif_id: string
         """
-        return GiphyResult(self._fetch(gif_id)['data'])
+        return GiphyImage(self._fetch(gif_id)['data'])
 
     def screensaver(self, tag=None):
         """
