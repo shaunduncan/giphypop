@@ -299,7 +299,7 @@ class Giphy(object):
         """
         return [x for x in self.search(term=term, phrase=phrase, limit=limit)]
 
-    def translate(self, term=None, phrase=None):
+    def translate(self, term=None, phrase=None, strict=False):
         """
         Retrieve a single image that represents a transalation of a term or
         phrase into an animated gif. Punctuation is ignored. By default, this
@@ -320,10 +320,10 @@ class Giphy(object):
         resp = self._fetch('translate', s=(term or phrase))
         if resp['data']:
             return GiphyImage(resp['data'])
-        else:
-            return None
+        elif strict:
+            raise GiphyApiException("Term/Phrase '%s' could not be translated into a GIF" % (term or phrase))
 
-    def gif(self, gif_id):
+    def gif(self, gif_id, strict=False):
         """
         Retrieves a specifc gif from giphy based on unique id
 
@@ -334,10 +334,10 @@ class Giphy(object):
 
         if resp['data']:
             return GiphyImage(resp['data'])
-        else:
-            return None
+        elif strict:
+            raise GiphyApiException("GIF with ID '%s' could not be found" % gif_id)
 
-    def screensaver(self, tag=None):
+    def screensaver(self, tag=None, strict=False):
         """
         Returns a random giphy image, optionally based on a search of a given tag.
         Note that this method will both query for a screensaver image and fetch the
@@ -351,14 +351,21 @@ class Giphy(object):
 
         if resp['data'] and resp['data']['id']:
             return self.gif(resp['data']['id'])
-        else:
-            return None
+        elif strict:
+            raise GiphyApiException("No screensaver GIF tagged '%s' found" % tag)
 
-    def random_gif(self):
+    def random_gif(self, strict=False):
         """
         A proxy for `screensaver` without a tag.
         """
-        return self.screensaver()
+        # This is a little different. If strict, we want our own message for the raise
+        if strict:
+            try:
+                return self.screensaver(strict=strict)
+            except GiphyApiException:
+                raise GiphyApiException('Could not locate a random GIF')
+        else:
+            return self.screensaver()
 
 
 def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY):

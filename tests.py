@@ -278,3 +278,15 @@ class GiphyTestCase(TestCase):
     def test_screensaver_returns_none(self):
         self.fake_fetch(result=None)
         assert self.g.screensaver('foo') is None
+
+    def test_translate_raises_strict(self):
+        self.fake_fetch(result=None)
+        self.assertRaises(GiphyApiException, self.g.translate, 'foo', strict=True)
+
+    def test_gif_returns_raises_strict(self):
+        self.fake_fetch(result=None)
+        self.assertRaises(GiphyApiException, self.g.gif, 'foo', strict=True)
+
+    def test_screensaver_raises_strict(self):
+        self.fake_fetch(result=None)
+        self.assertRaises(GiphyApiException, self.g.screensaver, 'foo', strict=True)
