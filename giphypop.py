@@ -376,21 +376,8 @@ class Giphy(object):
         elif strict or self.strict:
             raise GiphyApiException("No screensaver GIF tagged '%s' found" % tag)
 
-    def random_gif(self, strict=False):
-        """
-        A proxy for `screensaver` without a tag.
-
-        :param strict: Whether an exception should be raised when no results
-        :type strict: boolean
-        """
-        # This is a little different. If strict, we want our own message for the raise
-        if strict:
-            try:
-                return self.screensaver(strict=strict)
-            except GiphyApiException:
-                raise GiphyApiException('Could not locate a random GIF')
-        else:
-            return self.screensaver()
+    # Alias
+    random_gif = screensaver
 
 
 def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False):
@@ -433,9 +420,5 @@ def screensaver(tag=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
     return Giphy(api_key=api_key, strict=strict).screensaver(tag)
 
 
-def random_gif(api_key=GIPHY_PUBLIC_KEY, strict=False):
-    """
-    Shorthand for creating a Giphy api wrapper with the given api key
-    and then calling the random_gif method.
-    """
-    return Giphy(api_key=api_key, strict=strict).random_gif()
+# Alias
+random_gif = screensaver
