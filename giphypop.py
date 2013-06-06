@@ -1,14 +1,23 @@
+__title__ = 'giphypop'
+__version__ = '0.1'
+__author__ = 'Shaun Duncan'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2013 Shaun Duncan'
+
+
 import warnings
+import requests
 
 from functools import partial
-
-import requests
 
 
 GIPHY_API_ENDPOINT = 'http://api.giphy.com/v1/gifs'
 
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
+
+
+DEFAULT_SEARCH_LIMIT = 25
 
 
 class GiphyApiException(Exception):
@@ -231,7 +240,7 @@ class Giphy(object):
 
         return data
 
-    def search(self, term=None, phrase=None, limit=25):
+    def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
@@ -315,3 +324,49 @@ class Giphy(object):
         """
         params = {'tag': tag} if tag else {}
         return self.gif(self._fetch('screensaver', **params)['data']['id'])
+
+    def random_gif(self):
+        """
+        A proxy for `screensaver` without a tag.
+        """
+        return self.screensaver()
+
+
+def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the search method. Note that this will return a generator
+    """
+    return Giphy(api_key).search(term=term, phrase=phrase, limit=limit)
+
+
+def translate(term=None, phrase=None, api_key=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the translate method.
+    """
+    return Giphy(api_key).translate(term=term, phrase=phrase)
+
+
+def gif(gif_id, api_key=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the gif method.
+    """
+    return Giphy(api_key).gif(gif_id)
+
+
+def screensaver(tag=None, api_key=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the screensaver method.
+    """
+    return Giphy(api_key).screensaver(tag)
+
+
+def random_gif(api_key=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the random_gif method.
+    """
+    return Giphy(api_key).random_gif()
