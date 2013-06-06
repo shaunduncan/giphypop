@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from mock import Mock
+from mock import patch
 
-from giphypop import Giphy, GiphyResult, AttrDict
+from giphypop import AttrDict, Giphy, GiphyApiException, GiphyResult
 
 
 class AttrDictTestCase(TestCase):
@@ -111,6 +111,33 @@ class GiphyResultCase(TestCase):
 
         for prop, attr in props.items():
             assert getattr(result, prop) == getattr(result.original, attr)
+
+
+class GiphyTestCase(TestCase):
+
+    def setUp(self):
+        self.g = Giphy()
+
+    def test_endpoint(self):
+        assert self.g._endpoint('search') == 'http://api.giphy.com/v1/gifs/search'
+
+    def test_check_or_raise_raises(self):
+        self.assertRaises(GiphyApiException, self.g._check_or_raise, {'status': 400})
+
+    def test_check_or_raise_no_status(self):
+        self.assertRaises(GiphyApiException, self.g._check_or_raise, {})
+
+    def test_check_or_raise(self):
+        assert self.g._check_or_raise({'status': 200}) is None
+
+    @patch('giphypop.requests')
+    def test_fetch_error_raises(self, requests):
+        # api returns error messages sorta like...
+        err = {'meta': {'error_type': 'ERROR', 'code': 400, 'error_message': ''}}
+        requests.get.return_value = requests
+        requests.json.return_value = err
+
+        self.assertRaises(GiphyApiException, self.g._fetch, 'foo')
 
 
 # TEST DATA

@@ -1,5 +1,7 @@
 import warnings
 
+from functools import partial
+
 import requests
 
 
@@ -7,6 +9,10 @@ GIPHY_API_ENDPOINT = 'http://api.giphy.com/v1/gifs'
 
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
+
+
+class GiphyApiException(Exception):
+    pass
 
 
 class AttrDict(dict):
@@ -192,10 +198,6 @@ class GiphyResult(AttrDict):
         return data
 
 
-class GiphyApiException(Exception):
-    pass
-
-
 class Giphy(object):
     """
     A python wrapper around the Giphy Api
@@ -225,39 +227,53 @@ class Giphy(object):
         resp.raise_for_status()
 
         data = resp.json()
-        self._check_or_raise(data.get('meta'))
+        self._check_or_raise(data.get('meta', {}))
 
         return data
 
-    def search(self, term=None, phrase=None, limit=None, offset=0):
+    def search(self, term=None, phrase=None, limit=25):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
-        by phrase, use the `phrase` keyword argument.
+        by phrase, use the `phrase` keyword argument. Note that this method
+        is a GiphyResult generator that automatically handles api paging and
+        limits. Optionally accepts a limit that will terminate the generation
+        after a specified number of results have been yielded. This defaults
+        to 25 results; a None implies no limit
 
         :param term: Search term or terms
         :type term: string
         :param phrase: Search phrase
         :type phrase: string
-        :param limit: Number of results to return (maximum 25)
-        :type limit: int
-        :param offset: Results offset (0-indexed)
-        :type offset: int
+        :param limit: Maximum number of results to yield
+        :type phrase: int
         """
         assert any((term, phrase)), 'You must supply a term or phrase to search'
-
-        if limit is not None:
-            assert limit <= 25, 'Search limits must be <= 25'
 
         # Phrases should have dashes and not spaces
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        data = self._fetch('search', q=(term or phrase), offset=offset, limit=limit)
+        results_yielded = 0  # Count how many things we yield
+        page, per_page = 0, 25
+        fetch = partial(self._fetch, 'search', q=(term or phrase))
 
-        # TODO: Make this a generator
-        # TODO: Handle pagination after generator
-        return [GiphyResult(img) for img in data['data']]
+        # Generate results until we 1) run out of pages 2) reach a limit
+        while True:
+            data = fetch(offset=page, limit=per_page)
+            page += 1
+
+            for data in data['data']:
+                results_yielded += 1
+                yield GiphyResult(data)
+
+                if limit is not None and results_yielded >= limit:
+                    raise StopIteration
+
+            # total_count is actually total_pages. also check the limit
+            if ((page + 1) >= data['pagination']['total_count'] or
+                    (limit is not None and results_yielded >= limit)):
+                raise StopIteration
 
     def translate(self, term=None, phrase=None):
         """
@@ -277,8 +293,7 @@ class Giphy(object):
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        data = self._fetch('translate', s=(term or phrase))
-        return GiphyResult(data['data'])
+        return GiphyResult(self._fetch('translate', s=(term or phrase))['data'])
 
     def gif(self, gif_id):
         """
