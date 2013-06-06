@@ -209,16 +209,24 @@ class GiphyImage(AttrDict):
 
 class Giphy(object):
     """
-    A python wrapper around the Giphy Api
+    A python wrapper around the Giphy api. You should supply your own api
+    key when using this class, but it will default to Giphy's public api
+    key for testing. Note, that this might go away in the future, so don't
+    use this for anything outside of testing/playing with the api.
+
+    You can also supply a `strict` flag that will raise an exception if any
+    api method does not return a result. Note that individual api methods
+    also accept this flag if you would like more control over this behavior.
     """
 
-    def __init__(self, api_key=GIPHY_PUBLIC_KEY):
+    def __init__(self, api_key=GIPHY_PUBLIC_KEY, strict=False):
         # Warn if using public key
         if api_key == GIPHY_PUBLIC_KEY:
             warnings.warn('You are using the giphy public api key. This should be used for testing only '
                           'and may be deactivated in the future. See https://github.com/Giphy/GiphyAPI.')
 
         self.api_key = api_key
+        self.strict = strict
 
     def _endpoint(self, name):
         return '/'.join((GIPHY_API_ENDPOINT, name))
@@ -310,6 +318,8 @@ class Giphy(object):
         :type term: string
         :param phrase: Search phrase
         :type phrase: string
+        :param strict: Whether an exception should be raised when no results
+        :type strict: boolean
         """
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
@@ -320,7 +330,7 @@ class Giphy(object):
         resp = self._fetch('translate', s=(term or phrase))
         if resp['data']:
             return GiphyImage(resp['data'])
-        elif strict:
+        elif strict or self.strict:
             raise GiphyApiException("Term/Phrase '%s' could not be translated into a GIF" % (term or phrase))
 
     def gif(self, gif_id, strict=False):
@@ -329,12 +339,14 @@ class Giphy(object):
 
         :param gif_id: Unique giphy gif ID
         :type gif_id: string
+        :param strict: Whether an exception should be raised when no results
+        :type strict: boolean
         """
         resp = self._fetch(gif_id)
 
         if resp['data']:
             return GiphyImage(resp['data'])
-        elif strict:
+        elif strict or self.strict:
             raise GiphyApiException("GIF with ID '%s' could not be found" % gif_id)
 
     def screensaver(self, tag=None, strict=False):
@@ -345,18 +357,23 @@ class Giphy(object):
 
         :param tag: Tag to retrieve a screensaver image
         :type tag: string
+        :param strict: Whether an exception should be raised when no results
+        :type strict: boolean
         """
         params = {'tag': tag} if tag else {}
         resp = self._fetch('screensaver', **params)
 
         if resp['data'] and resp['data']['id']:
             return self.gif(resp['data']['id'])
-        elif strict:
+        elif strict or self.strict:
             raise GiphyApiException("No screensaver GIF tagged '%s' found" % tag)
 
     def random_gif(self, strict=False):
         """
         A proxy for `screensaver` without a tag.
+
+        :param strict: Whether an exception should be raised when no results
+        :type strict: boolean
         """
         # This is a little different. If strict, we want our own message for the raise
         if strict:
@@ -368,49 +385,49 @@ class Giphy(object):
             return self.screensaver()
 
 
-def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY):
+def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
     """
-    return Giphy(api_key).search(term=term, phrase=phrase, limit=limit)
+    return Giphy(api_key=api_key, strict=strict).search(term=term, phrase=phrase, limit=limit)
 
 
-def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY):
+def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search_list method.
     """
-    return Giphy(api_key).search(term=term, phrase=phrase, limit=limit)
+    return Giphy(api_key=api_key, strict=strict).search(term=term, phrase=phrase, limit=limit)
 
 
-def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY):
+def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the translate method.
     """
-    return Giphy(api_key).translate(term=term, phrase=phrase)
+    return Giphy(api_key=api_key, strict=strict).translate(term=term, phrase=phrase)
 
 
-def gif(gif_id, api_key=GIPHY_PUBLIC_KEY):
+def gif(gif_id, api_key=GIPHY_PUBLIC_KEY, strict=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the gif method.
     """
-    return Giphy(api_key).gif(gif_id)
+    return Giphy(api_key=api_key, strict=strict).gif(gif_id)
 
 
-def screensaver(tag=None, api_key=GIPHY_PUBLIC_KEY):
+def screensaver(tag=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the screensaver method.
     """
-    return Giphy(api_key).screensaver(tag)
+    return Giphy(api_key=api_key, strict=strict).screensaver(tag)
 
 
-def random_gif(api_key=GIPHY_PUBLIC_KEY):
+def random_gif(api_key=GIPHY_PUBLIC_KEY, strict=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the random_gif method.
     """
-    return Giphy(api_key).random_gif()
+    return Giphy(api_key=api_key, strict=strict).random_gif()
