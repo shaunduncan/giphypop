@@ -261,11 +261,15 @@ class Giphy(object):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
-        by phrase, use the `phrase` keyword argument. Note that this method
-        is a GiphyImage generator that automatically handles api paging and
-        limits. Optionally accepts a limit that will terminate the generation
-        after a specified number of results have been yielded. This defaults
-        to 25 results; a None implies no limit
+        by phrase, use the `phrase` keyword argument. What's the difference
+        between `term` and `phrase` searches? Simple: a term search will
+        return results matching any words given, whereas a phrase search will
+        match all words.
+
+        Note that this method is a GiphyImage generator that
+        automatically handles api paging. Optionally accepts a limit that will
+        terminate the generation after a specified number of results have been
+        yielded. This defaults to 25 results; a None implies no limit
 
         :param term: Search term or terms
         :type term: string
