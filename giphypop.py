@@ -104,6 +104,14 @@ class GiphyImage(AttrDict):
             # Shorthand
             self._make_images(data.get('images', {}))
 
+    def __repr__(self):
+        return '%s<%s> at %s' % (self.__class__.__name__, self.id, self.url)
+
+    def __str__(self):
+        return self.url
+
+    __unicode__ = __str__
+
     def open(self):
         """
         Opens the giphy url in a web browser
