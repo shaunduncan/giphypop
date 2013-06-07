@@ -18,5 +18,6 @@ setup(name='giphypop',
       url='http://www.github.com/shaunduncan/giphypop/',
       license='MIT',
       packages=find_packages(),
+      install_requires=['requests'],
       py_modules=['giphypop'],
       )
