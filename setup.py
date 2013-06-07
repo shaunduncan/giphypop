@@ -1,9 +1,7 @@
 from setuptools import setup, find_packages
 
-from giphypop import __version__
-
 setup(name='giphypop',
-      version=__version__,
+      version='0.1',
       description=("Python wrapper for Giphy API"),
       long_description=open('README.rst').read(),
       classifiers=['Development Status :: 4 - Beta',
