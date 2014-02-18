@@ -291,7 +291,7 @@ class Giphy(object):
         # Generate results until we 1) run out of pages 2) reach a limit
         while True:
             data = fetch(offset=page, limit=per_page)
-            page += 1
+            page += per_page
 
             # Guard for empty results
             if not data['data']:
@@ -304,7 +304,7 @@ class Giphy(object):
                 if limit is not None and results_yielded >= limit:
                     raise StopIteration
 
-            # total_count is actually total_pages. also check the limit
+            # Check yieled limit and whether or not there are more items
             if (page >= data['pagination']['total_count'] or
                     (limit is not None and results_yielded >= limit)):
                 raise StopIteration
@@ -315,9 +315,9 @@ class Giphy(object):
         than a generator. This method will have that effect. Equivalent to::
 
             >>> g = Giphy()
-            >>> results = [x for x in g.search('foo')]
+            >>> results = list(g.search('foo'))
         """
-        return [x for x in self.search(term=term, phrase=phrase, limit=limit)]
+        return list(self.search(term=term, phrase=phrase, limit=limit))
 
     def translate(self, term=None, phrase=None, strict=False):
         """

@@ -210,7 +210,7 @@ class GiphyTestCase(TestCase):
         self.g._fetch.return_value = {
             'data': [FAKE_DATA for x in range(num_results)],
             'pagination': {
-                'total_count': pages,
+                'total_count': pages * num_results,
                 'count': 25,
                 'offset': 0
             },
@@ -226,22 +226,31 @@ class GiphyTestCase(TestCase):
 
     def test_search_no_results(self):
         self.fake_search_fetch(0, pages=1)
-        results = [x for x in self.g.search('foo')]
+        results = list(self.g.search('foo'))
         assert len(results) == 0
 
     def test_search_respects_hard_limit(self):
         self.fake_search_fetch(25)
-        results = [x for x in self.g.search('foo', limit=10)]
+        results = list(self.g.search('foo', limit=10))
         assert len(results) == 10
 
     def test_search_handles_pages(self):
         self.fake_search_fetch(25)
-        results = [x for x in self.g.search('foo', limit=50)]
+        results = list(self.g.search('foo', limit=50))
         assert len(results) == 50
+
+    def test_search_correctly_pages(self):
+        self.fake_search_fetch(25, pages=2)
+        list(self.g.search('foo', limit=50))
+        calls = self.g._fetch.call_args_list
+
+        assert len(calls) == 2
+        assert calls[0][1]['offset'] == 0
+        assert calls[1][1]['offset'] == 25
 
     def test_search_no_limit_returns_all(self):
         self.fake_search_fetch(25)
-        results = [x for x in self.g.search('foo', limit=None)]
+        results = list(self.g.search('foo', limit=None))
         assert len(results) == 75
 
     def test_search_list_returns_list(self):
