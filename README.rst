@@ -50,7 +50,7 @@ otherwise, ``None`` is returned.
 .. code-block:: python
 
     >>> import giphypop
-    >>> g = Giphy()
+    >>> g = giphypop.Giphy()
 
 Now you're ready to get started. There are a few key methods of the
 ``giphypop.Giphy`` object that you'll want to know about
@@ -80,7 +80,7 @@ than a generator. This method will have that effect. Equivalent to:
 
 .. code-block:: python
 
-    >>> g = Giphy()
+    >>> g = giphypop.Giphy()
     >>> results = [x for x in g.search('foo')]
 
 translate
