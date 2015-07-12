@@ -257,7 +257,7 @@ class Giphy(object):
 
         return data
 
-    def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT):
+    def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, rating=None):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
@@ -277,6 +277,8 @@ class Giphy(object):
         :type phrase: string
         :param limit: Maximum number of results to yield
         :type phrase: int
+        :param rating: limit results to those rated (y,g, pg, pg-13 or r).
+        :type rating: string
         """
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
@@ -286,7 +288,10 @@ class Giphy(object):
 
         results_yielded = 0  # Count how many things we yield
         page, per_page = 0, 25
-        fetch = partial(self._fetch, 'search', q=(term or phrase))
+        params = {'q': (term or phrase)}
+        if rating:
+            params.update({'rating': rating})
+        fetch = partial(self._fetch, 'search', **params)
 
         # Generate results until we 1) run out of pages 2) reach a limit
         while True:
@@ -309,7 +314,7 @@ class Giphy(object):
                     (limit is not None and results_yielded >= limit)):
                 raise StopIteration
 
-    def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT):
+    def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, rating=None):
         """
         Suppose you expect the `search` method to just give you a list rather
         than a generator. This method will have that effect. Equivalent to::
@@ -317,9 +322,9 @@ class Giphy(object):
             >>> g = Giphy()
             >>> results = list(g.search('foo'))
         """
-        return list(self.search(term=term, phrase=phrase, limit=limit))
+        return list(self.search(term=term, phrase=phrase, limit=limit, rating=rating))
 
-    def translate(self, term=None, phrase=None, strict=False):
+    def translate(self, term=None, phrase=None, strict=False, rating=None):
         """
         Retrieve a single image that represents a transalation of a term or
         phrase into an animated gif. Punctuation is ignored. By default, this
@@ -332,6 +337,8 @@ class Giphy(object):
         :type phrase: string
         :param strict: Whether an exception should be raised when no results
         :type strict: boolean
+        :param rating: limit results to those rated (y,g, pg, pg-13 or r).
+        :type rating: string
         """
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
@@ -339,7 +346,10 @@ class Giphy(object):
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        resp = self._fetch('translate', s=(term or phrase))
+        params = {'s': (term or phrase)}
+        if rating:
+            params.update({'rating': rating})
+        resp = self._fetch('translate', **params)
         if resp['data']:
             return GiphyImage(resp['data'])
         elif strict or self.strict:
@@ -384,28 +394,28 @@ class Giphy(object):
     random_gif = screensaver
 
 
-def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False):
+def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False, rating-None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
     """
-    return Giphy(api_key=api_key, strict=strict).search(term=term, phrase=phrase, limit=limit)
+    return Giphy(api_key=api_key, strict=strict).search(term=term, phrase=phrase, limit=limit, rating=rating)
 
 
-def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False):
+def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search_list method.
     """
-    return Giphy(api_key=api_key, strict=strict).search_list(term=term, phrase=phrase, limit=limit)
+    return Giphy(api_key=api_key, strict=strict).search_list(term=term, phrase=phrase, limit=limit, rating=rating)
 
 
-def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
+def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the translate method.
     """
-    return Giphy(api_key=api_key, strict=strict).translate(term=term, phrase=phrase)
+    return Giphy(api_key=api_key, strict=strict).translate(term=term, phrase=phrase, rating=rating)
 
 
 def gif(gif_id, api_key=GIPHY_PUBLIC_KEY, strict=False):
