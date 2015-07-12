@@ -285,12 +285,11 @@ class Giphy(object):
         :param phrase: Search phrase
         :type phrase: string
         :param limit: Maximum number of results to yield
-        :type phrase: int
+        :type limit: int
         :param rating: limit results to those rated (y,g, pg, pg-13 or r).
         :type rating: string
         """
-        assert any((term, phrase)),
-            'You must supply a term or phrase to search'
+        assert any((term, phrase)), 'You must supply a term or phrase to search'
 
         # Phrases should have dashes and not spaces
         if phrase:
@@ -352,8 +351,7 @@ class Giphy(object):
         :param rating: limit results to those rated (y,g, pg, pg-13 or r).
         :type rating: string
         """
-        assert any((term, phrase)),
-            'You must supply a term or phrase to search'
+        assert any((term, phrase)), 'You must supply a term or phrase to search'
 
         # Phrases should have dashes and not spaces
         if phrase:
@@ -369,6 +367,53 @@ class Giphy(object):
             raise GiphyApiException(
                 "Term/Phrase '%s' could not be translated into a GIF" %
                 (term or phrase))
+
+    def trending(self, rating=None, limit=DEFAULT_SEARCH_LIMIT):
+        """
+        Retrieve GIFs currently trending online. The data returned mirrors
+        that used to create The Hot 100 list of GIFs on Giphy.
+
+        :param rating: limit results to those rated (y,g, pg, pg-13 or r).
+        :type rating: string
+        :param limit: Maximum number of results to yield
+        :type limit: int
+        """
+
+        results_yielded = 0  # Count how many things we yield
+        page, per_page = 0, 25
+        params = {'rating': rating} if rating else {}
+        fetch = partial(self._fetch, 'trending', **params)
+
+        # Generate results until we 1) run out of pages 2) reach a limit
+        while True:
+            data = fetch(offset=page, limit=per_page)
+            page += per_page
+
+            # Guard for empty results
+            if not data['data']:
+                raise StopIteration
+
+            for item in data['data']:
+                results_yielded += 1
+                yield GiphyImage(item)
+
+                if limit is not None and results_yielded >= limit:
+                    raise StopIteration
+
+            # Check yieled limit and whether or not there are more items
+            if (page >= data['pagination']['total_count'] or
+                    (limit is not None and results_yielded >= limit)):
+                raise StopIteration
+
+    def trending_list(self, rating=None, limit=DEFAULT_SEARCH_LIMIT):
+        """
+        Suppose you expect the `trending` method to just give you a list rather
+        than a generator. This method will have that effect. Equivalent to::
+
+            >>> g = Giphy()
+            >>> results = list(g.trending())
+        """
+        return list(self.trending(limit=limit, rating=rating))
 
     def gif(self, gif_id, strict=False):
         """
@@ -439,6 +484,27 @@ def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False,
     """
     return Giphy(api_key=api_key, strict=strict).translate(
         term=term, phrase=phrase, rating=rating)
+
+
+def trending(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False,
+             rating=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the trending method. Note that this will return
+    a generator
+    """
+    return Giphy(api_key=api_key, strict=strict).trending(
+            limit=limit, rating=rating)
+
+
+def trending_list(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False,
+             rating=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the trending_list method.
+    """
+    return Giphy(api_key=api_key, strict=strict).trending_list(
+            limit=limit, rating=rating)
 
 
 def gif(gif_id, api_key=GIPHY_PUBLIC_KEY, strict=False):
