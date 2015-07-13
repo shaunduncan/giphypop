@@ -9,6 +9,8 @@ from giphypop import (AttrDict,
                       search,
                       search_list,
                       translate,
+                      trending,
+                      trending_list,
                       gif,
                       screensaver)
 
@@ -217,6 +219,18 @@ class GiphyTestCase(TestCase):
             'meta': {'status': 200}
         }
 
+    def fake_trending_fetch(self, num_results, pages=3):
+        self.g._fetch = Mock()
+        self.g._fetch.return_value = {
+            'data': [FAKE_DATA for x in range(num_results)],
+            'pagination': {
+                'total_count': pages * num_results,
+                'count': 25,
+                'offset': 0
+            },
+            'meta': {'status': 200}
+        }
+
     def fake_fetch(self, result=FAKE_DATA):
         self.g._fetch = Mock()
         self.g._fetch.return_value = {
@@ -274,6 +288,41 @@ class GiphyTestCase(TestCase):
         assert isinstance(self.g.translate('foo'), GiphyImage)
         assert self.g._fetch.called_with('translate')
 
+    def test_trending_no_results(self):
+        self.fake_trending_fetch(0, pages=1)
+        results = list(self.g.trending())
+        assert len(results) == 0
+
+    def test_trending_respects_hard_limit(self):
+        self.fake_trending_fetch(25)
+        results = list(self.g.trending(limit=10))
+        assert len(results) == 10
+
+    def test_trending_handles_pages(self):
+        self.fake_trending_fetch(25)
+        results = list(self.g.trending(limit=50))
+        assert len(results) == 50
+
+    def test_trending_correctly_pages(self):
+        self.fake_trending_fetch(25, pages=2)
+        list(self.g.trending(limit=50))
+        calls = self.g._fetch.call_args_list
+
+        assert len(calls) == 2
+        assert calls[0][1]['offset'] == 0
+        assert calls[1][1]['offset'] == 25
+
+    def test_trending_no_limit_returns_all(self):
+        self.fake_trending_fetch(25)
+        results = list(self.g.trending(limit=None))
+        assert len(results) == 75
+
+    def test_trending_list_returns_list(self):
+        self.fake_trending_fetch(25)
+        results = self.g.trending_list(limit=10)
+        assert isinstance(results, list)
+        assert len(results) == 10
+
     def test_gif(self):
         self.fake_fetch()
         assert isinstance(self.g.gif('foo'), GiphyImage)
@@ -330,26 +379,29 @@ class AliasTestCase(TestCase):
     @patch('giphypop.Giphy')
     def test_search_alias(self, giphy):
         giphy.return_value = giphy
-        search(term='foo', limit=10, api_key='bar', strict=False)
+        search(term='foo', limit=10, api_key='bar', strict=False, rating=None)
 
         giphy.assert_called_with(api_key='bar', strict=False)
-        giphy.search.assert_called_with(term='foo', phrase=None, limit=10)
+        giphy.search.assert_called_with(term='foo', phrase=None, limit=10,
+                                        rating=None)
 
     @patch('giphypop.Giphy')
     def test_search_list_alias(self, giphy):
         giphy.return_value = giphy
-        search_list(term='foo', limit=10, api_key='bar', strict=False)
+        search_list(term='foo', limit=10, api_key='bar', strict=False,
+                    rating=None)
 
         giphy.assert_called_with(api_key='bar', strict=False)
-        giphy.search_list.assert_called_with(term='foo', phrase=None, limit=10)
+        giphy.search_list.assert_called_with(term='foo', phrase=None, limit=10,
+                                             rating=None)
 
     @patch('giphypop.Giphy')
     def test_translate_alias(self, giphy):
         giphy.return_value = giphy
-        translate(term='foo', api_key='bar', strict=False)
+        translate(term='foo', api_key='bar', strict=False, rating=None)
 
         giphy.assert_called_with(api_key='bar', strict=False)
-        giphy.translate.assert_called_with(term='foo', phrase=None)
+        giphy.translate.assert_called_with(term='foo', phrase=None, rating=None)
 
     @patch('giphypop.Giphy')
     def test_gif_alias(self, giphy):
@@ -366,3 +418,19 @@ class AliasTestCase(TestCase):
 
         giphy.assert_called_with(api_key='bar', strict=False)
         giphy.screensaver.assert_called_with(tag='foo')
+
+    @patch('giphypop.Giphy')
+    def test_trending_alias(self, giphy):
+        giphy.return_value = giphy
+        trending(api_key='bar', strict=False, rating=None, limit=10)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.trending.assert_called_with(rating=None, limit=10)
+
+    @patch('giphypop.Giphy')
+    def test_trending_list_alias(self, giphy):
+        giphy.return_value = giphy
+        trending_list(api_key='bar', strict=False, rating=None, limit=10)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.trending_list.assert_called_with(rating=None, limit=10)
