@@ -25,9 +25,11 @@ class GiphyApiException(Exception):
 
 
 class AttrDict(dict):
+
     """
     A subclass of dict that exposes keys as attributes
     """
+
     def __getattr__(self, attr):
         if attr in self.__dict__:
             return self.__dict__[attr]
@@ -35,7 +37,8 @@ class AttrDict(dict):
         try:
             return self[attr]
         except KeyError:
-            raise AttributeError("'%s' object has no attribute '%s'" % (self.__class__.__name__, attr))
+            raise AttributeError("'%s' object has no attribute '%s'" %
+                                 (self.__class__.__name__, attr))
 
     def __setattr__(self, attr, value):
         if attr in self.__dict__:
@@ -45,6 +48,7 @@ class AttrDict(dict):
 
 
 class GiphyImage(AttrDict):
+
     """
     A special case AttrDict that handles data specifically being returned
     from the giphy api (i.e. integer values converted from strings). The structure
@@ -89,6 +93,7 @@ class GiphyImage(AttrDict):
                     - width: image width
                     - height: image height
     """
+
     def __init__(self, data=None):
         if data:
             super(GiphyImage, self).__init__(id=data.get('id'),
@@ -216,6 +221,7 @@ class GiphyImage(AttrDict):
 
 
 class Giphy(object):
+
     """
     A python wrapper around the Giphy api. You should supply your own api
     key when using this class, but it will default to Giphy's public api
@@ -230,8 +236,10 @@ class Giphy(object):
     def __init__(self, api_key=GIPHY_PUBLIC_KEY, strict=False):
         # Warn if using public key
         if api_key == GIPHY_PUBLIC_KEY:
-            warnings.warn('You are using the giphy public api key. This should be used for testing only '
-                          'and may be deactivated in the future. See https://github.com/Giphy/GiphyAPI.')
+            warnings.warn('You are using the giphy public api key. This '
+                          'should be used for testing only and may be '
+                          'deactivated in the future. See '
+                          'https://github.com/Giphy/GiphyAPI.')
 
         self.api_key = api_key
         self.strict = strict
@@ -257,7 +265,8 @@ class Giphy(object):
 
         return data
 
-    def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT):
+    def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
+               rating=None):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
@@ -276,7 +285,9 @@ class Giphy(object):
         :param phrase: Search phrase
         :type phrase: string
         :param limit: Maximum number of results to yield
-        :type phrase: int
+        :type limit: int
+        :param rating: limit results to those rated (y,g, pg, pg-13 or r).
+        :type rating: string
         """
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
@@ -286,7 +297,10 @@ class Giphy(object):
 
         results_yielded = 0  # Count how many things we yield
         page, per_page = 0, 25
-        fetch = partial(self._fetch, 'search', q=(term or phrase))
+        params = {'q': (term or phrase)}
+        if rating:
+            params.update({'rating': rating})
+        fetch = partial(self._fetch, 'search', **params)
 
         # Generate results until we 1) run out of pages 2) reach a limit
         while True:
@@ -309,7 +323,8 @@ class Giphy(object):
                     (limit is not None and results_yielded >= limit)):
                 raise StopIteration
 
-    def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT):
+    def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
+                    rating=None):
         """
         Suppose you expect the `search` method to just give you a list rather
         than a generator. This method will have that effect. Equivalent to::
@@ -317,9 +332,10 @@ class Giphy(object):
             >>> g = Giphy()
             >>> results = list(g.search('foo'))
         """
-        return list(self.search(term=term, phrase=phrase, limit=limit))
+        return list(self.search(term=term, phrase=phrase, limit=limit,
+                                rating=rating))
 
-    def translate(self, term=None, phrase=None, strict=False):
+    def translate(self, term=None, phrase=None, strict=False, rating=None):
         """
         Retrieve a single image that represents a transalation of a term or
         phrase into an animated gif. Punctuation is ignored. By default, this
@@ -332,6 +348,8 @@ class Giphy(object):
         :type phrase: string
         :param strict: Whether an exception should be raised when no results
         :type strict: boolean
+        :param rating: limit results to those rated (y,g, pg, pg-13 or r).
+        :type rating: string
         """
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
@@ -339,11 +357,63 @@ class Giphy(object):
         if phrase:
             phrase = phrase.replace(' ', '-')
 
-        resp = self._fetch('translate', s=(term or phrase))
+        params = {'s': (term or phrase)}
+        if rating:
+            params.update({'rating': rating})
+        resp = self._fetch('translate', **params)
         if resp['data']:
             return GiphyImage(resp['data'])
         elif strict or self.strict:
-            raise GiphyApiException("Term/Phrase '%s' could not be translated into a GIF" % (term or phrase))
+            raise GiphyApiException(
+                "Term/Phrase '%s' could not be translated into a GIF" %
+                (term or phrase))
+
+    def trending(self, rating=None, limit=DEFAULT_SEARCH_LIMIT):
+        """
+        Retrieve GIFs currently trending online. The data returned mirrors
+        that used to create The Hot 100 list of GIFs on Giphy.
+
+        :param rating: limit results to those rated (y,g, pg, pg-13 or r).
+        :type rating: string
+        :param limit: Maximum number of results to yield
+        :type limit: int
+        """
+
+        results_yielded = 0  # Count how many things we yield
+        page, per_page = 0, 25
+        params = {'rating': rating} if rating else {}
+        fetch = partial(self._fetch, 'trending', **params)
+
+        # Generate results until we 1) run out of pages 2) reach a limit
+        while True:
+            data = fetch(offset=page, limit=per_page)
+            page += per_page
+
+            # Guard for empty results
+            if not data['data']:
+                raise StopIteration
+
+            for item in data['data']:
+                results_yielded += 1
+                yield GiphyImage(item)
+
+                if limit is not None and results_yielded >= limit:
+                    raise StopIteration
+
+            # Check yieled limit and whether or not there are more items
+            if (page >= data['pagination']['total_count'] or
+                    (limit is not None and results_yielded >= limit)):
+                raise StopIteration
+
+    def trending_list(self, rating=None, limit=DEFAULT_SEARCH_LIMIT):
+        """
+        Suppose you expect the `trending` method to just give you a list rather
+        than a generator. This method will have that effect. Equivalent to::
+
+            >>> g = Giphy()
+            >>> results = list(g.trending())
+        """
+        return list(self.trending(limit=limit, rating=rating))
 
     def gif(self, gif_id, strict=False):
         """
@@ -359,7 +429,8 @@ class Giphy(object):
         if resp['data']:
             return GiphyImage(resp['data'])
         elif strict or self.strict:
-            raise GiphyApiException("GIF with ID '%s' could not be found" % gif_id)
+            raise GiphyApiException(
+                "GIF with ID '%s' could not be found" % gif_id)
 
     def screensaver(self, tag=None, strict=False):
         """
@@ -378,34 +449,62 @@ class Giphy(object):
         if resp['data'] and resp['data']['id']:
             return self.gif(resp['data']['id'])
         elif strict or self.strict:
-            raise GiphyApiException("No screensaver GIF tagged '%s' found" % tag)
+            raise GiphyApiException(
+                "No screensaver GIF tagged '%s' found" % tag)
 
     # Alias
     random_gif = screensaver
 
 
-def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False):
+def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
+           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
     """
-    return Giphy(api_key=api_key, strict=strict).search(term=term, phrase=phrase, limit=limit)
+    return Giphy(api_key=api_key, strict=strict).search(
+        term=term, phrase=phrase, limit=limit, rating=rating)
 
 
-def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False):
+def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
+                api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search_list method.
     """
-    return Giphy(api_key=api_key, strict=strict).search_list(term=term, phrase=phrase, limit=limit)
+    return Giphy(api_key=api_key, strict=strict).search_list(
+        term=term, phrase=phrase, limit=limit, rating=rating)
 
 
-def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
+def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False,
+              rating=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the translate method.
     """
-    return Giphy(api_key=api_key, strict=strict).translate(term=term, phrase=phrase)
+    return Giphy(api_key=api_key, strict=strict).translate(
+        term=term, phrase=phrase, rating=rating)
+
+
+def trending(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False,
+             rating=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the trending method. Note that this will return
+    a generator
+    """
+    return Giphy(api_key=api_key, strict=strict).trending(
+            limit=limit, rating=rating)
+
+
+def trending_list(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False,
+             rating=None):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the trending_list method.
+    """
+    return Giphy(api_key=api_key, strict=strict).trending_list(
+            limit=limit, rating=rating)
 
 
 def gif(gif_id, api_key=GIPHY_PUBLIC_KEY, strict=False):
