@@ -199,6 +199,33 @@ For example:
     'http://giphy.com/foo/bar/downsampled'
 
 
+Uploading
+---------
+
+The Giphy API will accept uploads of gifs or videos. You are able to upload
+using the public API key, but you won't be able to assign them to your username
+or delete them. In order to upload to your account, set the `username` when you
+and the API key when you upload.
+
+For example:
+
+.. code-block:: python
+
+    >>> from giphypop import upload
+    >>> gif = upload(["foo", "bar"], "mycat.gif")
+    >>> gif
+    GiphyImage<26BRvG76mOYcvRxss> at http://giphy.com/gifs/bar-foo-26BRvG76mOYcvRxss
+
+Or using your own API key to upload to your own account:
+
+.. code-block:: python
+
+    >>> from giphypop import upload
+    >>> gif = upload(["foo", "bar"], "mycat.gif", username="gifsarefun", api_key="abcdef12345678")
+    >>> gif
+    GiphyImage<26BRvG76mOYcvRxss> at http://giphy.com/gifs/bar-foo-26BRvG76mOYcvRxss
+
+
 Changelog
 ---------
 
