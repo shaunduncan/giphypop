@@ -12,7 +12,8 @@ from giphypop import (AttrDict,
                       trending,
                       trending_list,
                       gif,
-                      screensaver)
+                      screensaver,
+                      upload)
 
 
 # TEST DATA
@@ -373,6 +374,19 @@ class GiphyTestCase(TestCase):
         self.assertRaises(GiphyApiException, self.g.gif, 'foo', strict=False)
         self.assertRaises(GiphyApiException, self.g.screensaver, 'foo', strict=False)
 
+    @patch('requests.post')
+    def test_upload(self, post):
+        resp = Mock()
+        resp.json.return_value = {
+            "data": {"id": "testid"},
+            "meta": {"status": 200}
+        }
+        post.return_value = resp
+        self.g.gif = Mock(return_value="test")
+        self.assertEqual(self.g.upload(['foo', 'bar'], '/dev/null'), "test")
+        self.assertTrue(post.called)
+        self.g.gif.assert_called_with("testid")
+
 
 class AliasTestCase(TestCase):
 
@@ -434,3 +448,12 @@ class AliasTestCase(TestCase):
 
         giphy.assert_called_with(api_key='bar', strict=False)
         giphy.trending_list.assert_called_with(rating=None, limit=10)
+
+    @patch('giphypop.Giphy')
+    def test_upload_alias(self, giphy):
+        giphy.return_value = giphy
+        upload(tags=['foo', 'bar'], file_path='/dev/null', username='foobar',
+               api_key='bar', strict=False)
+
+        giphy.assert_called_with(api_key='bar', strict=False)
+        giphy.upload.assert_called_with(['foo', 'bar'], '/dev/null', 'foobar')

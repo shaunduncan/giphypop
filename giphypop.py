@@ -555,9 +555,11 @@ def screensaver(tag=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
 random_gif = screensaver
 
 
-def upload(tags, file_path, username=None, api_key=GIPHY_PUBLIC_KEY):
+def upload(tags, file_path, username=None, api_key=GIPHY_PUBLIC_KEY,
+           strict=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the upload method.
     """
-    return Giphy(api_key=api_key).upload(tags, file_path, username)
+    return Giphy(api_key=api_key, strict=strict).upload(
+        tags, file_path, username)
