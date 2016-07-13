@@ -114,6 +114,15 @@ random_gif
 ++++++++++
 An alias of ``giphypop.Giphy.screensaver``
 
+upload
+++++++
+Uploads a video or gif to giphy. Once the upload has completed, requests the
+full gif details and returns a GiphyImage (2 request calls).
+
+- **tags**: A list of tags to use on the uploaded gif, list
+- **file_path**: The path to the file to upload, string
+- **username**: The username of the account to upload to when using your own API key, string
+
 ------------------------------------------------------------------------------
 
 .. note::

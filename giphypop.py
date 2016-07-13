@@ -515,25 +515,25 @@ def translate(term=None, phrase=None, api_key=GIPHY_PUBLIC_KEY, strict=False,
         term=term, phrase=phrase, rating=rating)
 
 
-def trending(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False,
-             rating=None):
+def trending(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY,
+             strict=False, rating=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the trending method. Note that this will return
     a generator
     """
     return Giphy(api_key=api_key, strict=strict).trending(
-            limit=limit, rating=rating)
+        limit=limit, rating=rating)
 
 
-def trending_list(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY, strict=False,
-             rating=None):
+def trending_list(limit=DEFAULT_SEARCH_LIMIT, api_key=GIPHY_PUBLIC_KEY,
+                  strict=False, rating=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the trending_list method.
     """
     return Giphy(api_key=api_key, strict=strict).trending_list(
-            limit=limit, rating=rating)
+        limit=limit, rating=rating)
 
 
 def gif(gif_id, api_key=GIPHY_PUBLIC_KEY, strict=False):
@@ -551,8 +551,13 @@ def screensaver(tag=None, api_key=GIPHY_PUBLIC_KEY, strict=False):
     """
     return Giphy(api_key=api_key, strict=strict).screensaver(tag=tag)
 
-
-
-
 # Alias
 random_gif = screensaver
+
+
+def upload(tags, file_path, username=None, api_key=GIPHY_PUBLIC_KEY):
+    """
+    Shorthand for creating a Giphy api wrapper with the given api key
+    and then calling the upload method.
+    """
+    return Giphy(api_key=api_key).upload(tags, file_path, username)
