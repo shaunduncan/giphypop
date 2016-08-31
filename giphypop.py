@@ -171,12 +171,22 @@ class GiphyImage(AttrDict):
         """
         # Order matters :)
         process = ('original',
+                   'original_still',
                    'fixed_width',
                    'fixed_height',
                    'fixed_width_downsampled',
                    'fixed_width_still',
                    'fixed_height_downsampled',
-                   'fixed_height_still')
+                   'fixed_height_still',
+                   'fixed_height_small',
+                   'fixed_height_small_still',
+                   'fixed_width_small',
+                   'fixed_width_small_still',
+                   'downsized',
+                   'downsized_still',
+                   'downsized_medium',
+                   'downsized_large',
+                   )
 
         for key in process:
             data = images.get(key)
