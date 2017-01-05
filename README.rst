@@ -114,6 +114,15 @@ random_gif
 ++++++++++
 An alias of ``giphypop.Giphy.screensaver``
 
+upload
+++++++
+Uploads a video or gif to giphy. Once the upload has completed, requests the
+full gif details and returns a GiphyImage (2 request calls).
+
+- **tags**: A list of tags to use on the uploaded gif, list
+- **file_path**: The path to the file to upload, string
+- **username**: The username of the account to upload to when using your own API key, string
+
 ------------------------------------------------------------------------------
 
 .. note::
@@ -188,6 +197,33 @@ For example:
     200
     >>> img.fixed_height.downsampled.url
     'http://giphy.com/foo/bar/downsampled'
+
+
+Uploading
+---------
+
+The Giphy API will accept uploads of gifs or videos. You are able to upload
+using the public API key, but you won't be able to assign them to your username
+or delete them. In order to upload to your account, set the `username` when you
+and the API key when you upload.
+
+For example:
+
+.. code-block:: python
+
+    >>> from giphypop import upload
+    >>> gif = upload(["foo", "bar"], "mycat.gif")
+    >>> gif
+    GiphyImage<26BRvG76mOYcvRxss> at http://giphy.com/gifs/bar-foo-26BRvG76mOYcvRxss
+
+Or using your own API key to upload to your own account:
+
+.. code-block:: python
+
+    >>> from giphypop import upload
+    >>> gif = upload(["foo", "bar"], "mycat.gif", username="gifsarefun", api_key="abcdef12345678")
+    >>> gif
+    GiphyImage<26BRvG76mOYcvRxss> at http://giphy.com/gifs/bar-foo-26BRvG76mOYcvRxss
 
 
 Changelog
