@@ -176,7 +176,8 @@ class GiphyImage(AttrDict):
                    'fixed_width_downsampled',
                    'fixed_width_still',
                    'fixed_height_downsampled',
-                   'fixed_height_still')
+                   'fixed_height_still',
+                   'downsized')
 
         for key in process:
             data = images.get(key)
