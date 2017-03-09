@@ -251,7 +251,7 @@ class Giphy(object):
 
     def _check_or_raise(self, meta):
         if meta.get('status') != 200:
-            raise GiphyApiException(meta.get('error_message'))
+            raise GiphyApiException(meta.get('error_message', meta.get('msg')))
 
     def _fetch(self, endpoint_name, **params):
         """
