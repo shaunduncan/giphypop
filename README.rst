@@ -40,9 +40,10 @@ warned, however, that while Giphy_ has been so kind as have a public
 for more information.
 
 The entry point for interacting with Giphy_ api is the ``giphypop.Giphy``
-class. This class optionally accepts two arguments: ``api_key`` and ``strict``.
+class. This class optionally accepts three arguments: ``api_key``, ``lang`` and ``strict``.
 The ``api_key`` agument, when not preset, will default to the public key
-(see above). The ``strict`` argument controls how you expect the api to
+(see above). The ``lang`` argument allows to pass custom language support to Giphy API request (see `Language Support <https://developers.giphy.com/docs/#language-support>`).
+The ``strict`` argument controls how you expect the api to
 react when no results are returned. If enabled, an exception is raised,
 otherwise, ``None`` is returned.
 
