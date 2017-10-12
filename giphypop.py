@@ -235,7 +235,7 @@ class Giphy(object):
     also accept this flag if you would like more control over this behavior.
     """
 
-    def __init__(self, api_key=GIPHY_PUBLIC_KEY, strict=False):
+    def __init__(self, api_key=GIPHY_PUBLIC_KEY, lang = None, strict=False):
         # Warn if using public key
         if api_key == GIPHY_PUBLIC_KEY:
             warnings.warn('You are using the giphy public api key. This '
@@ -245,7 +245,7 @@ class Giphy(object):
 
         self.api_key = api_key
         self.strict = strict
-
+        self.lang = lang
     def _endpoint(self, name):
         return '/'.join((GIPHY_API_ENDPOINT, name))
 
@@ -258,7 +258,8 @@ class Giphy(object):
         Wrapper for making an api request from giphy
         """
         params['api_key'] = self.api_key
-
+        if (self.lang is not None):
+            params['lang'] = self.lang
         resp = requests.get(self._endpoint(endpoint_name), params=params)
         resp.raise_for_status()
 
