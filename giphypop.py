@@ -296,8 +296,10 @@ class Giphy(object):
         :type rating: string
         """
         if stickers:
+            global ACTIVE_ENDPOINT
             ACTIVE_ENDPOINT = STICKERS_API_ENDPOINT
         else:
+            global ACTIVE_ENDPOINT
             ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
 
         assert any((term, phrase)), 'You must supply a term or phrase to search'
