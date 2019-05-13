@@ -343,7 +343,7 @@ class Giphy(object):
             >>> results = list(g.search('foo'))
         """
         return list(self.search(term=term, phrase=phrase, limit=limit,
-                                rating=rating))
+                                rating=rating, stickers=False))
 
     def translate(self, term=None, phrase=None, strict=False, rating=None):
         """
@@ -495,13 +495,13 @@ class Giphy(object):
 
 
 def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None):
+           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None, stickers=False):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
     """
     return Giphy(api_key=api_key, strict=strict).search(
-        term=term, phrase=phrase, limit=limit, rating=rating)
+        term=term, phrase=phrase, limit=limit, rating=rating, stickers=stickers)
 
 
 def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
