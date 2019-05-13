@@ -296,6 +296,7 @@ class Giphy(object):
         """
         if stickers:
             ACTIVE_ENDPOINT = STICKERS_API_ENDPOINT
+            print("stickers!")
         else:
             ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
 
