@@ -13,6 +13,9 @@ from functools import partial
 
 GIPHY_API_ENDPOINT = 'http://api.giphy.com/v1/gifs'
 GIPHY_UPLOAD_ENDPOINT = 'http://upload.giphy.com/v1/gifs'
+STICKERS_API_ENDPOINT = 'http://api.giphy.com/v1/stickers'
+
+ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
 
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
@@ -247,7 +250,7 @@ class Giphy(object):
         self.strict = strict
 
     def _endpoint(self, name):
-        return '/'.join((GIPHY_API_ENDPOINT, name))
+        return '/'.join((ACTIVE_ENDPOINT, name))
 
     def _check_or_raise(self, meta):
         if meta.get('status') != 200:
@@ -268,7 +271,7 @@ class Giphy(object):
         return data
 
     def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-               rating=None):
+               rating=None, stickers=False):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
@@ -291,6 +294,11 @@ class Giphy(object):
         :param rating: limit results to those rated (y,g, pg, pg-13 or r).
         :type rating: string
         """
+        if stickers:
+            ACTIVE_ENDPOINT = STICKERS_API_ENDPOINT
+        else:
+            ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
+
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
         # Phrases should have dashes and not spaces
