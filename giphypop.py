@@ -20,9 +20,13 @@ ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
 
-
 DEFAULT_SEARCH_LIMIT = 25
 
+def SetActiveEndpoint(endpoint):
+    ACTIVE_ENDPOINT = endpoint
+
+def GetActiveEndpoint():
+    return ACTIVE_ENDPOINT
 
 class GiphyApiException(Exception):
     pass
@@ -250,8 +254,8 @@ class Giphy(object):
         self.strict = strict
 
     def _endpoint(self, name):
-        print(ACTIVE_ENDPOINT)
-        return '/'.join((ACTIVE_ENDPOINT, name))
+        print(GetActiveEndpoint())
+        return '/'.join((GetActiveEndpoint(), name))
 
     def _check_or_raise(self, meta):
         if meta.get('status') != 200:
@@ -296,11 +300,9 @@ class Giphy(object):
         :type rating: string
         """
         if stickers:
-            global ACTIVE_ENDPOINT
-            ACTIVE_ENDPOINT = STICKERS_API_ENDPOINT
+            SetActiveEndpoint(STICKERS_API_ENDPOINT)
         else:
-            global ACTIVE_ENDPOINT
-            ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
+            SetActiveEndpoint(GIPHY_API_ENDPOINT)
 
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
