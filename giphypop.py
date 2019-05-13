@@ -271,7 +271,7 @@ class Giphy(object):
         return data
 
     def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-               rating=None, stickers=False):
+               rating=None, stickers=None):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
@@ -495,7 +495,7 @@ class Giphy(object):
 
 
 def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None, stickers=False):
+           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None, stickers=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
