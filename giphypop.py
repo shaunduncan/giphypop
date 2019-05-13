@@ -15,7 +15,7 @@ GIPHY_API_ENDPOINT = 'http://api.giphy.com/v1/gifs'
 GIPHY_UPLOAD_ENDPOINT = 'http://upload.giphy.com/v1/gifs'
 STICKERS_API_ENDPOINT = 'http://api.giphy.com/v1/stickers'
 
-ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
+#ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
 
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
@@ -23,9 +23,11 @@ GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
 DEFAULT_SEARCH_LIMIT = 25
 
 def SetActiveEndpoint(endpoint):
+    global ACTIVE_ENDPOINT
     ACTIVE_ENDPOINT = endpoint
 
 def GetActiveEndpoint():
+    global ACTIVE_ENDPOINT
     return ACTIVE_ENDPOINT
 
 class GiphyApiException(Exception):
