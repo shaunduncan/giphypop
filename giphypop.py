@@ -4,18 +4,14 @@ __author__ = 'Shaun Duncan'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2013 Shaun Duncan'
 
-
 import warnings
 import requests
 
 from functools import partial
 
-
 GIPHY_API_ENDPOINT = 'http://api.giphy.com/v1/gifs'
 GIPHY_UPLOAD_ENDPOINT = 'http://upload.giphy.com/v1/gifs'
 STICKERS_API_ENDPOINT = 'http://api.giphy.com/v1/stickers'
-
-#ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
 
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
