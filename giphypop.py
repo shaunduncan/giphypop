@@ -250,6 +250,7 @@ class Giphy(object):
         self.strict = strict
 
     def _endpoint(self, name):
+        print(ACTIVE_ENDPOINT)
         return '/'.join((ACTIVE_ENDPOINT, name))
 
     def _check_or_raise(self, meta):
@@ -296,7 +297,6 @@ class Giphy(object):
         """
         if stickers:
             ACTIVE_ENDPOINT = STICKERS_API_ENDPOINT
-            print("stickers!")
         else:
             ACTIVE_ENDPOINT = GIPHY_API_ENDPOINT
 
