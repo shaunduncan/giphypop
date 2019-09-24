@@ -4,22 +4,28 @@ __author__ = 'Shaun Duncan'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2013 Shaun Duncan'
 
-
 import warnings
 import requests
 
 from functools import partial
 
-
 GIPHY_API_ENDPOINT = 'http://api.giphy.com/v1/gifs'
 GIPHY_UPLOAD_ENDPOINT = 'http://upload.giphy.com/v1/gifs'
+STICKERS_API_ENDPOINT = 'http://api.giphy.com/v1/stickers'
+TRENDING_API_ENDPOINT = 'http://api.giphy.com/v1/gifs/trending'
 
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
 
-
 DEFAULT_SEARCH_LIMIT = 25
 
+def SetActiveEndpoint(endpoint):
+    global ACTIVE_ENDPOINT
+    ACTIVE_ENDPOINT = endpoint
+
+def GetActiveEndpoint():
+    global ACTIVE_ENDPOINT
+    return ACTIVE_ENDPOINT
 
 class GiphyApiException(Exception):
     pass
@@ -247,7 +253,8 @@ class Giphy(object):
         self.strict = strict
 
     def _endpoint(self, name):
-        return '/'.join((GIPHY_API_ENDPOINT, name))
+        print(GetActiveEndpoint())
+        return '/'.join((GetActiveEndpoint(), name))
 
     def _check_or_raise(self, meta):
         if meta.get('status') != 200:
@@ -268,7 +275,7 @@ class Giphy(object):
         return data
 
     def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-               rating=None):
+               rating=None, stickers=None, trending=None):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
@@ -291,6 +298,13 @@ class Giphy(object):
         :param rating: limit results to those rated (y,g, pg, pg-13 or r).
         :type rating: string
         """
+        if stickers:
+            SetActiveEndpoint(STICKERS_API_ENDPOINT)
+        elif trending:
+            SetActiveEndpoint(TRENDING_API_ENDPOINT)
+        else:
+            SetActiveEndpoint(GIPHY_API_ENDPOINT)
+
         assert any((term, phrase)), 'You must supply a term or phrase to search'
 
         # Phrases should have dashes and not spaces
@@ -326,7 +340,7 @@ class Giphy(object):
                 raise StopIteration
 
     def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-                    rating=None):
+                    rating=None, stickers=None, trending=None):
         """
         Suppose you expect the `search` method to just give you a list rather
         than a generator. This method will have that effect. Equivalent to::
@@ -335,7 +349,7 @@ class Giphy(object):
             >>> results = list(g.search('foo'))
         """
         return list(self.search(term=term, phrase=phrase, limit=limit,
-                                rating=rating))
+                                rating=rating, stickers=stickers, trending=trending))
 
     def translate(self, term=None, phrase=None, strict=False, rating=None):
         """
@@ -380,6 +394,8 @@ class Giphy(object):
         :param limit: Maximum number of results to yield
         :type limit: int
         """
+
+        SetActiveEndpoint(GIPHY_API_ENDPOINT)
 
         results_yielded = 0  # Count how many things we yield
         page, per_page = 0, 25
@@ -487,13 +503,13 @@ class Giphy(object):
 
 
 def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None):
+           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None, stickers=None, trending=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
     """
     return Giphy(api_key=api_key, strict=strict).search(
-        term=term, phrase=phrase, limit=limit, rating=rating)
+        term=term, phrase=phrase, limit=limit, rating=rating, stickers=stickers, trending=trending)
 
 
 def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
