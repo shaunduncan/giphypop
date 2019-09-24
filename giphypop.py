@@ -300,7 +300,7 @@ class Giphy(object):
         """
         if stickers:
             SetActiveEndpoint(STICKERS_API_ENDPOINT)
-        if trending:
+        elif trending:
             SetActiveEndpoint(TRENDING_API_ENDPOINT)
         else:
             SetActiveEndpoint(GIPHY_API_ENDPOINT)
@@ -394,6 +394,8 @@ class Giphy(object):
         :param limit: Maximum number of results to yield
         :type limit: int
         """
+
+        SetActiveEndpoint(GIPHY_API_ENDPOINT)
 
         results_yielded = 0  # Count how many things we yield
         page, per_page = 0, 25
