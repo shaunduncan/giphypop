@@ -12,6 +12,7 @@ from functools import partial
 GIPHY_API_ENDPOINT = 'http://api.giphy.com/v1/gifs'
 GIPHY_UPLOAD_ENDPOINT = 'http://upload.giphy.com/v1/gifs'
 STICKERS_API_ENDPOINT = 'http://api.giphy.com/v1/stickers'
+TRENDING_API_ENDPOINT = 'http://api.giphy.com/v1/gifs/trending'
 
 # Note this is a public beta key and may be inactive at some point
 GIPHY_PUBLIC_KEY = 'dc6zaTOxFJmzC'
@@ -274,7 +275,7 @@ class Giphy(object):
         return data
 
     def search(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-               rating=None, stickers=None):
+               rating=None, stickers=None, trending=None):
         """
         Search for gifs with a given word or phrase. Punctuation is ignored.
         By default, this will perform a `term` search. If you want to search
@@ -299,6 +300,8 @@ class Giphy(object):
         """
         if stickers:
             SetActiveEndpoint(STICKERS_API_ENDPOINT)
+        if trending:
+            SetActiveEndpoint(TRENDING_API_ENDPOINT)
         else:
             SetActiveEndpoint(GIPHY_API_ENDPOINT)
 
@@ -337,7 +340,7 @@ class Giphy(object):
                 raise StopIteration
 
     def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-                    rating=None, stickers=None):
+                    rating=None, stickers=None, trending=None):
         """
         Suppose you expect the `search` method to just give you a list rather
         than a generator. This method will have that effect. Equivalent to::
@@ -346,7 +349,7 @@ class Giphy(object):
             >>> results = list(g.search('foo'))
         """
         return list(self.search(term=term, phrase=phrase, limit=limit,
-                                rating=rating, stickers=stickers))
+                                rating=rating, stickers=stickers, trending=trending))
 
     def translate(self, term=None, phrase=None, strict=False, rating=None):
         """
@@ -498,13 +501,13 @@ class Giphy(object):
 
 
 def search(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
-           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None, stickers=None):
+           api_key=GIPHY_PUBLIC_KEY, strict=False, rating=None, stickers=None, trending=None):
     """
     Shorthand for creating a Giphy api wrapper with the given api key
     and then calling the search method. Note that this will return a generator
     """
     return Giphy(api_key=api_key, strict=strict).search(
-        term=term, phrase=phrase, limit=limit, rating=rating, stickers=stickers)
+        term=term, phrase=phrase, limit=limit, rating=rating, stickers=stickers, trending=trending)
 
 
 def search_list(term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
