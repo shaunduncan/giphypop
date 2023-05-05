@@ -318,12 +318,16 @@ class Giphy(object):
                 yield GiphyImage(item)
 
                 if limit is not None and results_yielded >= limit:
-                    raise StopIteration
+                    break
+                #Exception is not required and requires unneccessary try except block
+                    # raise StopIteration
 
             # Check yieled limit and whether or not there are more items
             if (page >= data['pagination']['total_count'] or
                     (limit is not None and results_yielded >= limit)):
-                raise StopIteration
+                break
+                #Exception is not required and requires unneccessary try except block
+                # raise StopIteration
 
     def search_list(self, term=None, phrase=None, limit=DEFAULT_SEARCH_LIMIT,
                     rating=None):
